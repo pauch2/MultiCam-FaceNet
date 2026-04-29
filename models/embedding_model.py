@@ -7,18 +7,9 @@ from facenet_pytorch import InceptionResnetV1
 class FaceEmbeddingModel(nn.Module):
     def __init__(self, embedding_dim=128):
         super(FaceEmbeddingModel, self).__init__()
-        # ResNet18 backbone, pretrained=False as requested
-        # self.backbone = models.resnet18(weights="IMAGENET1K_V1")
+        # MobileNet V3 backbone
         self.backbone = models.mobilenet_v3_small()
-        # self.backbone = models.mnasnet1_3(weights="DEFAULT")
         self.backbone.classifier = nn.Identity()
-        # self.backbone = InceptionResnetV1(pretrained='vggface2')
-        # self.backbone.classify = False
-        # Replace the final fully connected layer
-
-        # self.backbone.fc = nn.Identity()
-        # self.backbone = models.swin_t(weights="DEFAULT")
-        # self.backbone.head = nn.Identity()
 
     def forward(self, x):
         # Extract features
