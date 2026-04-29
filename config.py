@@ -3,8 +3,8 @@ import os
 # Project Roots
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_NAME = "mobilenet_v3_VGGFace(scheduler+arcface)_train_pre_train"
-DB_PATH = os.path.join(BASE_DIR, 'database', f'(MODEL_TEST){MODEL_NAME}.db')
-# DB_PATH = os.path.join(BASE_DIR, 'database', f'faces_mobilenet_v3_small_VGGFace2_train_pre_train.db')
+# DB_PATH = os.path.join(BASE_DIR, 'database', f'(MODEL_TEST){MODEL_NAME}.db')
+DB_PATH = os.path.join(BASE_DIR, 'database', f'faces_mobilenet_v3_small_VGGFace2_train_pre_train.db')
 LOG_PATH = os.path.join(BASE_DIR, 'logs', 'access_log.csv')
 MODEL_WEIGHTS_PATH = os.path.join(BASE_DIR, 'models', f'{MODEL_NAME}.pth')
 
