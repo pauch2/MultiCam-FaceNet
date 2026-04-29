@@ -90,7 +90,7 @@ pip install -r requirements.txt
 face_id_demo/
 ├── models/
 │   └── swin_t_VGGFace2_train_pre_train.pth   ← trained embedding model
-└── best26_v19s_0_7.pt                          ← YOLOv8 face detector
+└── best26_v19s_0_7.pt                          ← YOLOv26 face detector
 ```
 
 Paths are configurable in `config.py`.
@@ -114,7 +114,7 @@ Open **http://localhost:8080/ui** — log in with `admin1` / `password`.
 | `EMBEDDING_DIM` | `768` | `768` = raw Swin-T output; any other value adds a projection MLP (requires retraining) |
 | `SIMILARITY_THRESHOLD` | `0.5` | Default cosine similarity cutoff, overridable per camera at runtime |
 | `MARGIN` | `0.3` | Triplet loss margin |
-| `DEVICE` | `None` | `None` = auto-detect CUDA. Set `"cpu"` or `"cuda:1"` to override |
+| `DEVICE` | `None` | `None` = auto-detect CUDA. Set `"cpu"` or `"cuda:0"` to override |
 | `IMAGE_SIZE` | `(224, 224)` | Face crop size fed to the embedding model |
 | `FLIP_HORIZONTAL` | `True` | Mirror-flip frames (webcams) |
 | `LOG_INTERVAL_SEC` | `2.0` | Min seconds between DB log entries for the same person per camera |
