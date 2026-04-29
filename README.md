@@ -185,9 +185,12 @@ Outputs saved to `runs/eval_<model>_split_80_20/`:
 - `fp_examples_thr_*.csv` — highest-similarity false positives per threshold
 - `report.txt`
 
----
+
+
 
 ## Web UI
+
+<img width="1919" height="1079" alt="Screenshot 2026-04-29 145338" src="https://github.com/user-attachments/assets/93d42a6d-d503-4c66-a5da-1cdb8a2fbe6d" />
 
 | Page | Roles | Description |
 |---|---|---|
