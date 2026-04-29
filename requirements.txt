@@ -1,0 +1,41 @@
+# ── Core ML ──────────────────────────────────────────────────────────────────
+torch~=2.10.0
+torchvision~=0.25.0
+# torchaudio is NOT used in this project — omitted intentionally
+
+# ── Computer Vision ───────────────────────────────────────────────────────────
+opencv-python~=4.10.0.84
+ultralytics~=8.4.14
+pillow~=12.1.1
+
+# ── Data / Math ───────────────────────────────────────────────────────────────
+numpy~=2.1.0
+scipy~=1.17.1
+faiss-cpu~=1.13.2
+matplotlib~=3.10.8
+tqdm~=4.67.3
+
+# ── Web API ───────────────────────────────────────────────────────────────────
+fastapi~=0.135.1
+uvicorn~=0.41.0
+pydantic~=2.12.5
+python-multipart~=0.0.12     # required for OAuth2PasswordRequestForm (form data parsing)
+
+# ── Database ──────────────────────────────────────────────────────────────────
+sqlalchemy~=2.0.36            # models.py / session.py / frame_processor.py
+
+# ── Authentication ────────────────────────────────────────────────────────────
+PyJWT~=2.10.1   # auth.py: import jwt
+bcrypt~=4.2.1   # auth.py: password hashing (used directly — passlib is incompatible with bcrypt>=4)
+
+# ── Networking ────────────────────────────────────────────────────────────────
+requests~=2.32.5
+
+# ── Platform-specific ─────────────────────────────────────────────────────────
+pyreadline3~=3.5.4 ; sys_platform == "win32"   # db_editor.py readline on Windows
+
+# Packages intentionally removed vs. original requirements.txt:
+#   torchaudio    — not imported anywhere
+#   transformers  — not imported anywhere (left in if you plan to add HuggingFace models)
+#   Font          — not a real package name (was likely a mistake)
+#   setuptools    — should not be a project dependency
