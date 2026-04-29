@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.Python
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Model weights (large — store separately, e.g. Git LFS or shared drive)
+*.pth
+*.pt
+
+# Runtime data
+database/*.db
+logs/*.csv
+storage/
+data/
+runs/
+
+# Editor / OS
+.idea/
+.vscode/
+*.DS_Store
+Thumbs.db
