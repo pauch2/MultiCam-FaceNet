@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Face ID</title>
+  <link rel="stylesheet" href="/static/ui.css?v=1773631315"/>
+</head>
+<body>
+
+<!-- ══ AUTH SCREEN ══════════════════════════════════════════════════════════ -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <h1>👁 Face ID</h1>
+    <p class="sub">Access control &amp; face recognition</p>
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="tab-login"    onclick="authTab('login')">Sign in</div>
+      <div class="auth-tab"        id="tab-register" onclick="authTab('register')">Register</div>
+    </div>
+
+    <!-- Sign in -->
+    <div class="auth-form show" id="form-login">
+      <div class="field"><label>Username</label>
+        <input class="input" id="loginUser" placeholder="username" autocomplete="username"
+               onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <div class="field"><label>Password</label>
+        <input class="input" id="loginPass" type="password" placeholder="••••••"
+               autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <div class="auth-err" id="loginErr"></div>
+      <button class="btn btn--primary btn--full" onclick="doLogin()">Sign in</button>
+    </div>
+
+    <!-- Register -->
+    <div class="auth-form" id="form-register">
+      <div class="field"><label>Username</label>
+        <input class="input" id="regUser" placeholder="at least 3 characters"
+               autocomplete="username"/></div>
+      <div class="field"><label>Password</label>
+        <input class="input" id="regPass" type="password" placeholder="at least 6 characters"
+               autocomplete="new-password"/></div>
+      <div class="field"><label>Confirm password</label>
+        <input class="input" id="regPass2" type="password" placeholder="repeat password"
+               autocomplete="new-password"/></div>
+      <div class="auth-err" id="regErr"></div>
+      <button class="btn btn--primary btn--full" onclick="doRegister()">Create account</button>
+      <p class="hint" style="text-align:center;margin-top:4px">
+        New accounts are created with <strong>User</strong> role.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DASHBOARD ════════════════════════════════════════════════════════════ -->
+<div id="app" style="display:none">
+
+  <!-- Sidebar -->
+  <aside id="sidebar">
+    <div id="sidebar-logo">
+      <span class="logo-icon">👁</span> Face ID
+    </div>
+    <nav>
+      <div class="nav-group">Main</div>
+      <button class="nav-item staff-only active" data-page="feeds"   onclick="nav('feeds')">
+        <span class="icon">📹</span> Live Feeds</button>
+      <button class="nav-item" data-page="logs"           onclick="nav('logs')">
+        <span class="icon">📋</span> My Log</button>
+
+      <!-- staff only (admin + moderator) -->
+      <div class="nav-group staff-only">Face Mgmt</div>
+      <button class="nav-item staff-only" data-page="register" onclick="nav('register')">
+        <span class="icon">🧑</span> Register Face</button>
+      <button class="nav-item staff-only" data-page="cameras"  onclick="nav('cameras')">
+        <span class="icon">🎥</span> Cameras</button>
+
+      <div class="nav-group">Account</div>
+      <button class="nav-item" data-page="password" onclick="nav('password')">
+        <span class="icon">🔑</span> Change Password</button>
+
+      <!-- admin only -->
+      <div class="nav-group admin-only">Administration</div>
+      <button class="nav-item admin-only" data-page="users"  onclick="nav('users')">
+        <span class="icon">👥</span> Users</button>
+      <button class="nav-item admin-only" data-page="facedb" onclick="nav('facedb')">
+        <span class="icon">🗄</span> Face Database</button>
+      <button class="nav-item admin-only" data-page="audit"  onclick="nav('audit')">
+        <span class="icon">🔍</span> Audit Log</button>
+    </nav>
+    <div id="sidebar-footer">
+      <span>👤</span>
+      <div id="sidebar-user">—</div>
+      <button id="btn-logout" title="Sign out" onclick="doLogout()">⏻</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div id="main">
+    <div id="topbar">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span id="topbar-title">Live Feeds</span>
+      </div>
+      <div style="position:relative">
+        <button class="btn btn--sm" id="userMenuBtn" onclick="toggleUserMenu()" style="display:flex;align-items:center;gap:6px;padding:6px 10px">
+          👤 <span id="topbar-user" style="font-size:13px"></span> <span style="font-size:10px;opacity:.6">▾</span>
+        </button>
+        <div id="userMenu" style="display:none;position:absolute;right:0;top:calc(100% + 6px);
+             background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+             min-width:180px;padding:8px;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,.4)">
+          <div style="padding:6px 10px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--border);margin-bottom:6px">
+            <div id="menuUsername" style="font-weight:600;color:var(--text)"></div>
+            <div id="menuRole" style="margin-top:2px"></div>
+          </div>
+          <button class="btn btn--sm" style="width:100%;text-align:left;margin-bottom:4px" onclick="nav('password');toggleUserMenu()">🔑 Change Password</button>
+          <button class="btn btn--sm btn--danger" style="width:100%;text-align:left" onclick="doLogout()">⏻ Sign Out</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="page-area">
+
+      <!-- ── LIVE FEEDS ──────────────────────────────────────────────────── -->
+      <div id="page-feeds" class="page">
+        <div class="card">
+          <div class="row" style="justify-content:space-between;margin-bottom:14px">
+            <div class="card-title" style="margin:0">Live Feeds</div>
+            <button class="btn btn--sm" onclick="pages.feeds.refresh()">🔄 Refresh</button>
+          </div>
+          <div id="feeds-grid" class="grid-feeds">
+            <p id="feeds-empty" style="opacity:.45;grid-column:1/-1">
+              No cameras are streaming. Go to
+              <a href="#" onclick="nav('cameras');return false">Cameras</a>
+              and click ▶ Start.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── DETECTION LOG ───────────────────────────────────────────────── -->
+      <div id="page-logs" class="page" style="display:none">
+
+        <!-- Filters -->
+        <div class="filters">
+          <div class="field staff-only" style="min-width:150px">
+            <label>Name</label>
+            <input class="input" id="detName" placeholder="All names"/>
+          </div>
+          <div class="field">
+            <label>From</label>
+            <input class="input" id="detFrom" type="date"/>
+          </div>
+          <div class="field">
+            <label>To</label>
+            <input class="input" id="detTo" type="date"/>
+          </div>
+          <div class="field" style="min-width:70px">
+            <label>Limit</label>
+            <select id="detLimit" class="input">
+              <option value="50">50</option>
+              <option value="100" selected>100</option>
+              <option value="250">250</option>
+              <option value="1000">1000</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:6px;align-items:flex-end;flex-wrap:wrap">
+            <button class="btn btn--primary btn--sm" onclick="pages.logs.load()">🔍 Apply</button>
+            <button class="btn btn--sm" onclick="pages.logs.clearFilters()">✕ Clear</button>
+            <label class="check" style="padding-bottom:2px">
+              <input type="checkbox" id="detAutoRefresh" onchange="pages.logs.toggleAuto()"/>
+              Auto 5s
+            </label>
+            <button class="btn btn--success btn--sm staff-only" onclick="pages.logs.exportXlsx()" title="Export filtered results to Excel">
+              📥 Export XLSX
+            </button>
+          </div>
+        </div>
+
+        <!-- Camera toggle chips (staff only) -->
+        <div id="camChipsWrap" class="staff-only" style="margin-bottom:12px">
+          <div class="card-sub" style="margin-bottom:6px">Filter by camera</div>
+          <div class="cam-chips" id="camChips">
+            <span class="hint">Loading cameras…</span>
+          </div>
+        </div>
+
+        <!-- Recognised table -->
+        <div class="card" style="margin-bottom:12px">
+          <div class="row" style="justify-content:space-between;margin-bottom:10px">
+            <div class="card-sub" style="margin:0">Recognised <span id="detCount" class="pill pill-blue" style="font-size:11px"></span></div>
+            <button class="btn btn--sm" onclick="pages.logs.load()">🔄</button>
+          </div>
+          <div class="tbl-wrap" style="max-height:420px;overflow-y:auto">
+            <table>
+              <thead><tr>
+                <th>ID</th><th>Name</th><th>Camera</th>
+                <th>Time</th><th>Conf</th><th>Photo</th>
+              </tr></thead>
+              <tbody id="detTbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Unknown table (staff only) -->
+        <div class="card staff-only">
+          <div class="card-sub" style="margin-bottom:10px">
+            Unknown Faces <span id="unknownCount" class="pill pill-muted" style="font-size:11px"></span>
+          </div>
+          <div class="tbl-wrap" style="max-height:340px;overflow-y:auto">
+            <table>
+              <thead><tr>
+                <th>ID</th><th>Camera</th><th>Time</th><th>Photo</th>
+              </tr></thead>
+              <tbody id="unknownTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── REGISTER FACE ───────────────────────────────────────────────── -->
+      <div id="page-register" class="page" style="display:none">
+        <div class="grid-2">
+
+          <!-- Left: camera preview -->
+          <div class="card">
+            <div class="card-title">Camera Preview</div>
+
+            <!-- Source selector -->
+            <div class="field" style="margin-bottom:10px">
+              <label>Camera source</label>
+              <div class="row" style="gap:14px;flex-wrap:wrap">
+                <label class="check">
+                  <input type="radio" name="regSrc" value="client" checked
+                         onchange="pages.reg.switchSource('client')"/> My webcam
+                </label>
+                <label class="check">
+                  <input type="radio" name="regSrc" value="server"
+                         onchange="pages.reg.switchSource('server')"/> Server camera
+                </label>
+                <select class="input" id="regServerCam" style="display:none;width:auto"
+                        onchange="pages.reg.onServerCamChange()">
+                  <option value="">— pick camera —</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row" style="margin-bottom:10px" id="regClientBtns">
+              <button class="btn btn--primary" id="btnRegStart" onclick="pages.reg.startCam()">▶ Start</button>
+              <button class="btn" id="btnRegStop" onclick="pages.reg.stopCam()" disabled>■ Stop</button>
+            </div>
+            <div class="cam-wrap" id="regClientWrap">
+              <canvas id="regCanvas" width="640" height="480"></canvas>
+            </div>
+            <div class="cam-wrap" id="regServerWrap" style="display:none">
+              <img id="regServerImg" alt="Select a server camera" style="width:100%;border-radius:8px">
+            </div>
+            <div id="regMsg" class="msg" style="margin-top:8px"></div>
+          </div>
+
+          <!-- Right: capture controls -->
+          <div class="card">
+            <div class="card-title">Capture Anchors</div>
+            <div class="field" style="margin-bottom:14px">
+              <label>Name</label>
+              <input class="input" id="capName" placeholder="e.g. John Smith"/>
+            </div>
+
+            <div class="row" style="margin-bottom:14px">
+              <button class="btn btn--primary" id="btnCapStart"
+                      onclick="pages.reg.startCapture()" disabled>▶ Start capture</button>
+              <button class="btn" id="btnCapStop"
+                      onclick="pages.reg.stopCapture()" disabled>■ Stop</button>
+              <button class="btn btn--danger" id="btnCapReset"
+                      onclick="pages.reg.resetCapture()" disabled>🗑 Reset</button>
+            </div>
+
+            <div id="capProgress" style="display:none;margin-bottom:14px">
+              <div class="progress-track">
+                <div class="progress-fill" id="capBar" style="width:0%"></div>
+              </div>
+              <p class="hint" id="capCount" style="margin-top:5px">0 / 150 anchors</p>
+            </div>
+
+            <button class="btn btn--primary btn--full" id="btnCapSave"
+                    onclick="pages.reg.saveCapture()" disabled>💾 Save registration</button>
+            <div id="capMsg" class="msg" style="margin-top:10px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CAMERAS ────────────────────────────────────────────────────── -->
+      <div id="page-cameras" class="page" style="display:none">
+
+        <div class="card">
+          <div class="row" style="justify-content:space-between;margin-bottom:14px">
+            <div class="card-title" style="margin:0">Cameras</div>
+            <button class="btn btn--sm" onclick="pages.cams.load()">🔄 Refresh</button>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>ID</th><th>Name</th><th>Source</th>
+                <th>Status</th><th>🔍 Recog.</th><th>📷 Reg.</th><th>Actions</th>
+              </tr></thead>
+              <tbody id="camsTbody"></tbody>
+            </table>
+          </div>
+          <div id="camsMsg" class="msg" style="margin-top:10px"></div>
+        </div>
+
+        <!-- Sessions panel (shown on demand) -->
+        <div class="card" id="sessionsCard" style="display:none">
+          <div class="row" style="justify-content:space-between;margin-bottom:10px">
+            <div class="card-title" id="sessionsCamName" style="margin:0">Sessions</div>
+            <button class="btn btn--sm" onclick="qs('sessionsCard').style.display='none'">✕</button>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>ID</th><th>Started</th><th>Ended</th><th>Duration</th><th>Live</th>
+              </tr></thead>
+              <tbody id="sessionsTbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Add camera -->
+        <div class="card">
+          <div class="card-title">Add Camera</div>
+          <div class="row" style="flex-wrap:wrap;gap:10px;align-items:flex-end">
+            <div class="field" style="flex:1;min-width:130px"><label>Name</label>
+              <input class="input" id="newCamName" placeholder="Front Door"/></div>
+            <div class="field" style="flex:2;min-width:160px"><label>Source (index or URL)</label>
+              <input class="input" id="newCamSrc" placeholder="0  ·  rtsp://…  ·  http://…"/></div>
+            <label class="check">
+              <input type="checkbox" id="newCamRec" checked/> Recognition</label>
+            <button class="btn btn--primary" onclick="pages.cams.create()">＋ Add</button>
+          </div>
+          <div id="addCamMsg" class="msg" style="margin-top:8px"></div>
+        </div>
+
+        <!-- Stream Quality -->
+        <div class="card">
+          <div class="card-title">Stream Quality &amp; Processing</div>
+          <p class="hint" style="margin-bottom:12px">
+            <strong>Process width</strong> resizes frames <em>before</em> detection — fixes tiny circles on high-res phone streams and speeds up ML.<br>
+            <strong>JPEG quality</strong> controls browser delivery only. Changes apply immediately.
+          </p>
+          <div class="row" style="flex-wrap:wrap;gap:12px;align-items:flex-end">
+            <div class="field"><label>Camera</label>
+              <select class="input" id="qualCam" style="width:auto"></select></div>
+            <div class="field" style="flex:1;min-width:180px">
+              <label>JPEG quality: <strong id="qualVal">70</strong> / 95</label>
+              <input type="range" min="10" max="95" value="70" id="qualSlider"
+                     oninput="qs('qualVal').textContent=this.value" style="width:100%">
+              <div class="hint">10 = fastest · 95 = best</div>
+            </div>
+            <div class="field">
+              <label>Process width px <span class="hint">(0 = native)</span></label>
+              <input class="input input--small" type="number" id="qualProcWidth" value="640" min="0" max="3840">
+              <div class="hint">640–960 recommended for phone streams</div>
+            </div>
+            <div class="field">
+              <label>Output width px <span class="hint">(0 = native)</span></label>
+              <input class="input input--small" type="number" id="qualWidth" value="0" min="0" max="3840">
+            </div>
+            <div class="field" style="min-width:200px">
+              <label>Recognition threshold: <strong id="thrVal">0.50</strong></label>
+              <input type="range" min="0" max="100" value="50" id="qualThr"
+                     oninput="qs('thrVal').textContent=(this.value/100).toFixed(2)" style="width:100%">
+              <div class="hint">Lower = more matches · Higher = stricter</div>
+            </div>
+            <button class="btn btn--primary" onclick="pages.cams.applyQuality()">Apply all</button>
+            <button class="btn" onclick="pages.cams.applyThreshold()" style="margin-left:6px">Set threshold only</button>
+          </div>
+          <div id="qualMsg" class="msg" style="margin-top:8px"></div>
+        </div>
+
+        <!-- Live Metrics -->
+        <div class="card" id="metricsCard" style="display:none">
+          <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
+            <span>📊 Live Metrics</span>
+            <div style="display:flex;gap:8px;align-items:center">
+              <select class="input" id="metricsCam" style="width:auto;padding:4px 8px;font-size:12px"></select>
+              <button class="btn btn--sm" onclick="pages.cams.refreshMetrics()">🔄</button>
+              <button class="btn btn--sm btn--ghost" id="btnMetricsAuto" onclick="pages.cams.toggleMetricsAuto()">▶ Auto</button>
+            </div>
+          </div>
+          <div id="metricsBody" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:10px"></div>
+        </div>
+      </div>
+
+      <!-- ── CHANGE PASSWORD ────────────────────────────────────────────── -->
+      <div id="page-password" class="page" style="display:none">
+        <div class="card" style="max-width:420px">
+          <div class="card-title">Change Password</div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div class="field"><label>Current password</label>
+              <input class="input" id="pwOld" type="password"
+                     autocomplete="current-password"
+                     onkeydown="if(event.key==='Enter')pages.pw.save()"/></div>
+            <div class="field"><label>New password</label>
+              <input class="input" id="pwNew" type="password"
+                     placeholder="at least 6 characters" autocomplete="new-password"
+                     onkeydown="if(event.key==='Enter')pages.pw.save()"/></div>
+            <div class="field"><label>Confirm new password</label>
+              <input class="input" id="pwNew2" type="password"
+                     autocomplete="new-password"
+                     onkeydown="if(event.key==='Enter')pages.pw.save()"/></div>
+            <div id="pwMsg" class="msg"></div>
+            <button class="btn btn--primary" onclick="pages.pw.save()">Save new password</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── USERS (admin) ──────────────────────────────────────────────── -->
+      <div id="page-users" class="page" style="display:none">
+        <div class="card">
+          <div class="row" style="justify-content:space-between;margin-bottom:14px">
+            <div class="card-title" style="margin:0">User Management</div>
+            <button class="btn btn--sm" onclick="pages.users.load()">🔄 Refresh</button>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>ID</th><th>Login</th><th>Display Name</th><th>Role</th>
+                <th>Active</th><th>Actions</th>
+              </tr></thead>
+              <tbody id="usersTbody"></tbody>
+            </table>
+          </div>
+          <div id="usersMsg" class="msg" style="margin-top:8px"></div>
+        </div>
+
+        <div class="card" style="max-width:520px">
+          <div class="card-title">Create User</div>
+          <div class="row" style="flex-wrap:wrap;gap:10px;align-items:flex-end">
+            <div class="field" style="flex:1;min-width:120px"><label>Username</label>
+              <input class="input" id="newUsr" placeholder="username"/></div>
+            <div class="field" style="flex:1;min-width:120px"><label>Password</label>
+              <input class="input" id="newPwd" type="password"/></div>
+            <div class="field" style="min-width:110px"><label>Role</label>
+              <select class="input" id="newRole">
+                <option value="user">user</option>
+                <option value="moderator">moderator</option>
+                <option value="admin">admin</option>
+              </select></div>
+            <button class="btn btn--primary" onclick="pages.users.create()">＋ Create</button>
+          </div>
+          <div id="createUserMsg" class="msg" style="margin-top:8px"></div>
+        </div>
+      </div>
+
+      <!-- ── FACE DATABASE (admin) ──────────────────────────────────────── -->
+      <div id="page-facedb" class="page" style="display:none">
+        <div class="card">
+          <div class="row" style="justify-content:space-between;margin-bottom:14px">
+            <div class="card-title" style="margin:0">Face Database</div>
+            <button class="btn btn--sm" onclick="pages.facedb.load()">🔄 Refresh</button>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>Username (key)</th><th>Linked User</th><th>Emb.</th><th>Actions</th>
+              </tr></thead>
+              <tbody id="facedbTbody"></tbody>
+            </table>
+          </div>
+          <div id="facedbMsg" class="msg" style="margin-top:8px"></div>
+        </div>
+      </div>
+
+      <!-- ── AUDIT LOG (admin) ──────────────────────────────────────────── -->
+      <div id="page-audit" class="page" style="display:none">
+        <div class="card">
+          <div class="row" style="justify-content:space-between;margin-bottom:14px">
+            <div class="card-title" style="margin:0">Audit Log</div>
+            <button class="btn btn--sm" onclick="pages.audit.load()">🔄 Refresh</button>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>ID</th><th>Actor</th><th>Action</th>
+                <th>Target</th><th>Details</th><th>Time</th>
+              </tr></thead>
+              <tbody id="auditTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /page-area -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- Lightbox -->
+<div id="lightbox" onclick="closeLightbox()">
+  <img id="lightbox-img" src="" alt=""/>
+</div>
+
+<script src="/static/ui.js?v=1773631315"></script>
+</body>
+</html>
